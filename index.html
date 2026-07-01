@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maker-Lab — Il tuo quaderno di lavoro · NWoW</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --coral:#EE7660;
+    --coral-soft:#FBEEEA;
+    --coral-deep:#D65F49;
+    --ink:#1E1E1E;
+    --ink-2:#4A4A4A;
+    --muted:#7A746E;
+    --paper:#F7F6F4;
+    --card:#FFFFFF;
+    --line:#E6E2DD;
+    --line-strong:#D6D0C9;
+    --display:'Poppins',sans-serif;
+    --body:'IBM Plex Sans',system-ui,sans-serif;
+    --radius:14px;
+    --maxw:880px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--body);font-size:16px;line-height:1.5;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+  /* ---------- top bar ---------- */
+  .topbar{position:sticky;top:0;z-index:50;background:rgba(247,246,244,.92);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .topbar .wrap{display:flex;align-items:center;gap:16px;
+    padding-top:14px;padding-bottom:14px;flex-wrap:wrap}
+  .brand{display:flex;flex-direction:column;gap:2px;margin-right:auto}
+  .eyebrow-top{font-family:var(--display);font-weight:600;font-size:11px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--coral)}
+  .brand h1{font-family:var(--display);font-weight:700;font-size:19px;margin:0;letter-spacing:-.01em}
+  .save-state{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px;
+    opacity:0;transition:opacity .35s ease}
+  .save-state.on{opacity:1}
+  .save-state .dot{width:7px;height:7px;border-radius:50%;background:var(--coral)}
+  .btn-pdf{font-family:var(--display);font-weight:600;font-size:13.5px;cursor:pointer;
+    border:1px solid var(--ink);background:var(--ink);color:#fff;
+    padding:9px 16px;border-radius:999px;transition:transform .12s ease,background .15s ease}
+  .btn-pdf:hover{background:#000}
+  .btn-pdf:active{transform:translateY(1px)}
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 0 14px;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto;cursor:pointer;border:1px solid var(--line-strong);background:var(--card);
+    border-radius:999px;padding:8px 16px;font-family:var(--display);font-weight:500;font-size:13.5px;
+    color:var(--ink-2);display:flex;align-items:center;gap:8px;transition:all .15s ease}
+  .tab .ix{font-weight:700;color:var(--muted);font-size:12px}
+  .tab:hover{border-color:var(--ink)}
+  .tab[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .tab[aria-selected="true"] .ix{color:var(--coral)}
+
+  /* ---------- sections ---------- */
+  main{padding:22px 0 80px}
+  .panel{display:none;animation:fade .25s ease}
+  .panel.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .sec-head{margin-bottom:18px}
+  .eyebrow{font-family:var(--display);font-weight:600;font-size:11.5px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--coral);margin-bottom:7px}
+  .sec-head h2{font-family:var(--display);font-weight:700;font-size:27px;line-height:1.15;
+    margin:0 0 8px;letter-spacing:-.015em}
+  .sec-head p{margin:0;color:var(--ink-2);max-width:60ch;font-size:15.5px}
+
+  /* ---------- field cards ---------- */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px 18px 16px;margin-bottom:14px}
+  .label{font-family:var(--display);font-weight:600;font-size:14px;margin-bottom:9px;display:block}
+  .label .q{color:var(--coral);font-weight:700;margin-right:7px}
+  .hint{color:var(--muted);font-weight:400;font-size:12.5px;display:block;margin-top:2px}
+  .field{font-family:var(--body);font-size:15px;line-height:1.55;color:var(--ink);
+    min-height:46px;border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+    background:#fff;outline:none;transition:border-color .15s ease}
+  .field:focus{border-color:var(--coral)}
+  .field:empty:before{content:attr(data-placeholder);color:#B7B0A8}
+  .field.tall{min-height:78px}
+
+  /* ---------- SIPOC ---------- */
+  .sipoc{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .sipoc .col{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .sipoc .col.lateral .label{color:var(--ink-2)}
+  .sipoc .process{grid-column:1 / -1;border-color:var(--coral);background:var(--coral-soft)}
+  .sipoc .process .label{color:var(--coral-deep)}
+  .steps{display:flex;flex-direction:column;gap:8px}
+  .step{display:flex;align-items:flex-start;gap:10px}
+  .step .n{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--coral);color:#fff;
+    font-family:var(--display);font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:8px}
+  .step .field{flex:1;min-height:40px}
+  .lateral-note{font-size:12px;color:var(--muted);margin:-4px 0 12px}
+
+  /* ---------- the signature: read/write line ---------- */
+  .gate{margin:6px 0 14px;position:relative;text-align:center}
+  .gate .rule{height:2px;background:linear-gradient(90deg,transparent,var(--coral),transparent)}
+  .gate .pill{display:inline-flex;align-items:center;gap:9px;background:var(--ink);color:#fff;
+    font-family:var(--display);font-weight:600;font-size:13px;padding:8px 18px;border-radius:999px;
+    margin-top:-15px;position:relative}
+  .gate .pill .lock{color:var(--coral)}
+  .gate .mini{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);
+    font-family:var(--display);font-weight:500;letter-spacing:.04em;margin-top:10px}
+  .gate .mini b{color:var(--coral-deep);font-weight:600}
+
+  /* ---------- checklist ---------- */
+  .check{display:flex;align-items:flex-start;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .check:last-child{border-bottom:none}
+  .check input{appearance:none;flex:0 0 auto;width:21px;height:21px;border:2px solid var(--line-strong);
+    border-radius:6px;margin-top:1px;cursor:pointer;position:relative;transition:all .12s ease}
+  .check input:checked{background:var(--coral);border-color:var(--coral)}
+  .check input:checked:after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;
+    border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+  .check label{font-size:15px;cursor:pointer;line-height:1.4}
+
+  .thread{border-color:var(--coral);background:var(--coral-soft)}
+  .thread .label{color:var(--coral-deep)}
+
+  footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);font-size:13px;
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+  .reset{background:none;border:none;color:var(--muted);text-decoration:underline;cursor:pointer;
+    font-family:var(--body);font-size:13px;padding:0}
+  .reset:hover{color:var(--coral-deep)}
+
+  @media (max-width:560px){
+    .sec-head h2{font-size:23px}
+    .sipoc{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .panel{animation:none}
+    .save-state,.btn-pdf,.tab,.field{transition:none}
+  }
+
+  /* ---------- print: full record, all sections ---------- */
+  @media print{
+    @page{margin:16mm}
+    body{background:#fff;font-size:12px}
+    .topbar,.tabs,footer,.btn-pdf,.save-state{display:none !important}
+    main{padding:0}
+    .panel{display:block !important;page-break-after:always;animation:none}
+    .panel:last-child{page-break-after:auto}
+    .sec-head h2{font-size:20px}
+    .card,.sipoc .col{break-inside:avoid;border-color:#ccc}
+    .gate .pill{background:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .check input:checked,.step .n,.gate .rule{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .field:empty:before{content:""}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <span class="eyebrow-top">Talent Garden · New Ways of Working</span>
+      <h1>Maker-Lab — il tuo quaderno</h1>
+    </div>
+    <span class="save-state" id="saveState"><span class="dot"></span>Salvato sul tuo dispositivo</span>
+    <button class="btn-pdf" onclick="window.print()">⬇ Salva come PDF</button>
+  </div>
+  <div class="wrap">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-panel="p1"><span class="ix">O1·O2</span> Verifica</button>
+      <button class="tab" role="tab" aria-selected="false" data-panel="p2"><span class="ix">O3</span> Processo</button>
+      <button class="tab" role="tab" aria-selected="false" data-panel="p3"><span class="ix">O4</span> Agente</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ O1 + O2 ============ -->
+  <section class="panel active" id="p1" role="tabpanel">
+    <div class="sec-head">
+      <div class="eyebrow">O1 · O2 — Dove e come usare l'AI</div>
+      <h2>Verificare l'output</h2>
+      <p>L'AI indovina sempre meglio cosa vuoi sentirti dire. Il tuo valore è il pensiero chiaro prima di chiedere, e la verifica critica dopo.</p>
+    </div>
+
+    <div class="card">
+      <label class="label">Il use case che ho provato</label>
+      <div class="field tall" contenteditable="true" data-key="uc_case" data-placeholder="Un task reale del tuo lavoro su cui hai usato l'AI…"></div>
+    </div>
+
+    <div class="card">
+      <label class="label">Il prompt che ho usato</label>
+      <div class="field tall" contenteditable="true" data-key="uc_prompt" data-placeholder="Cosa hai chiesto, e come…"></div>
+    </div>
+
+    <div class="card">
+      <label class="label">Prima di fidarmi dell'output<span class="hint">Spunta solo quello che hai davvero controllato.</span></label>
+      <div class="check"><input type="checkbox" id="c1" data-key="chk_1"><label for="c1">Avevo chiaro cosa volevo, prima di chiedere?</label></div>
+      <div class="check"><input type="checkbox" id="c2" data-key="chk_2"><label for="c2">Risponde alla mia domanda, o suona solo bene?</label></div>
+      <div class="check"><input type="checkbox" id="c3" data-key="chk_3"><label for="c3">Quali fatti o fonti devo controllare a mano?</label></div>
+      <div class="check"><input type="checkbox" id="c4" data-key="chk_4"><label for="c4">Cosa manca, o cosa ha dato per scontato?</label></div>
+      <div class="check"><input type="checkbox" id="c5" data-key="chk_5"><label for="c5">Tono e contesto: lo userei così com'è nel mio lavoro?</label></div>
+    </div>
+
+    <div class="card">
+      <label class="label">Verdetto<span class="hint">Cosa tieni dell'output, cosa rifai.</span></label>
+      <div class="field tall" contenteditable="true" data-key="uc_verdict" data-placeholder="…"></div>
+    </div>
+
+    <div class="card thread">
+      <label class="label">In questo lavoro, cosa tengo umano — e perché</label>
+      <div class="field" contenteditable="true" data-key="human_1" data-placeholder="La prima riga rossa della giornata. La riprenderai alla fine."></div>
+    </div>
+  </section>
+
+  <!-- ============ O3 — SIPOC ============ -->
+  <section class="panel" id="p2" role="tabpanel">
+    <div class="sec-head">
+      <div class="eyebrow">O3 — Formalizzare il processo</div>
+      <h2>Il processo, in una pagina</h2>
+      <p>Il collo di bottiglia dell'AI non è la tecnologia: è descrivere bene cosa fai. Cinque colonne, niente notazione speciale. Il cuore sono i passi.</p>
+    </div>
+
+    <p class="lateral-note">Le colonne laterali puoi anche solo abbozzarle. Concentrati sui passi.</p>
+
+    <div class="sipoc">
+      <div class="col lateral">
+        <label class="label">Fornitore<span class="hint">Chi fornisce ciò che ti serve.</span></label>
+        <div class="field" contenteditable="true" data-key="sipoc_supplier" data-placeholder="…"></div>
+      </div>
+      <div class="col lateral">
+        <label class="label">Input<span class="hint">Cosa entra nel processo.</span></label>
+        <div class="field" contenteditable="true" data-key="sipoc_input" data-placeholder="…"></div>
+      </div>
+
+      <div class="col process">
+        <label class="label">Processo — i passi<span class="hint">Da 4 a 7 passi, in ordine. È qui che si lavora.</span></label>
+        <div class="steps">
+          <div class="step"><span class="n">1</span><div class="field" contenteditable="true" data-key="sipoc_s1" data-placeholder="Primo passo…"></div></div>
+          <div class="step"><span class="n">2</span><div class="field" contenteditable="true" data-key="sipoc_s2" data-placeholder=""></div></div>
+          <div class="step"><span class="n">3</span><div class="field" contenteditable="true" data-key="sipoc_s3" data-placeholder=""></div></div>
+          <div class="step"><span class="n">4</span><div class="field" contenteditable="true" data-key="sipoc_s4" data-placeholder=""></div></div>
+          <div class="step"><span class="n">5</span><div class="field" contenteditable="true" data-key="sipoc_s5" data-placeholder="(se serve)"></div></div>
+          <div class="step"><span class="n">6</span><div class="field" contenteditable="true" data-key="sipoc_s6" data-placeholder="(se serve)"></div></div>
+          <div class="step"><span class="n">7</span><div class="field" contenteditable="true" data-key="sipoc_s7" data-placeholder="(se serve)"></div></div>
+        </div>
+      </div>
+
+      <div class="col lateral">
+        <label class="label">Output<span class="hint">Cosa esce dal processo.</span></label>
+        <div class="field" contenteditable="true" data-key="sipoc_output" data-placeholder="…"></div>
+      </div>
+      <div class="col lateral">
+        <label class="label">Cliente<span class="hint">Chi riceve l'output.</span></label>
+        <div class="field" contenteditable="true" data-key="sipoc_customer" data-placeholder="…"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ O4 — Agente ============ -->
+  <section class="panel" id="p3" role="tabpanel">
+    <div class="sec-head">
+      <div class="eyebrow">O4 — Progettare l'agente</div>
+      <h2>Da un passo a un assistente che dirigi</h2>
+      <p>Non un robot che decide da sé. Un collaboratore affidabile che ti chiede il permesso prima di agire — più utile, più sicuro, più portabile in azienda lunedì.</p>
+    </div>
+
+    <div class="card">
+      <label class="label">Il passo del mio processo che voglio delegare<span class="hint">Prendilo dal tuo SIPOC, non inventarne uno nuovo.</span></label>
+      <div class="field" contenteditable="true" data-key="ag_step" data-placeholder="Un solo passo, quello che ti ruba tempo…"></div>
+    </div>
+
+    <div class="card">
+      <label class="label"><span class="q">1</span>Trigger<span class="hint">Cosa lo fa partire?</span></label>
+      <div class="field" contenteditable="true" data-key="ag_trigger" data-placeholder="…"></div>
+    </div>
+    <div class="card">
+      <label class="label"><span class="q">2</span>Filtro<span class="hint">Cosa tiene, cosa scarta?</span></label>
+      <div class="field" contenteditable="true" data-key="ag_filter" data-placeholder="…"></div>
+    </div>
+    <div class="card">
+      <label class="label"><span class="q">3</span>Lettura<span class="hint">Cosa legge, quali informazioni usa?</span></label>
+      <div class="field" contenteditable="true" data-key="ag_read" data-placeholder="…"></div>
+    </div>
+    <div class="card">
+      <label class="label"><span class="q">4</span>Output<span class="hint">Cosa produce, e in che forma?</span></label>
+      <div class="field" contenteditable="true" data-key="ag_output" data-placeholder="…"></div>
+    </div>
+
+    <!-- signature: the read/write line -->
+    <div class="gate" aria-hidden="false">
+      <div class="rule"></div>
+      <span class="pill"><span class="lock">●</span> la linea lettura / scrittura — qui passa il tuo sì</span>
+      <div class="mini"><span>fin qui: <b>in autonomia</b></span><span>da qui: <b>solo col tuo permesso</b></span></div>
+    </div>
+
+    <div class="card">
+      <label class="label"><span class="q">5</span>Approvazione<span class="hint">Chi dà l'ok prima che agisca? (sei tu)</span></label>
+      <div class="field" contenteditable="true" data-key="ag_approval" data-placeholder="…"></div>
+    </div>
+    <div class="card">
+      <label class="label"><span class="q">6</span>Scrittura / azione<span class="hint">Cosa esegue, una volta che hai detto sì?</span></label>
+      <div class="field" contenteditable="true" data-key="ag_write" data-placeholder="…"></div>
+    </div>
+
+    <div class="card thread">
+      <label class="label">Cosa resta umano — cosa non delegherei mai</label>
+      <div class="field" contenteditable="true" data-key="human_2" data-placeholder="…"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <span>Il tuo lavoro resta sul tuo dispositivo. Salvalo come PDF per portartelo via.</span>
+  <button class="reset" id="resetBtn">Ricomincia da capo</button>
+</footer>
+
+<script>
+(function(){
+  var PREFIX = "nwow_makerlab_v1:";
+  var saveState = document.getElementById("saveState");
+  var t;
+
+  function flash(){
+    if(!saveState) return;
+    saveState.classList.add("on");
+    clearTimeout(t);
+    t = setTimeout(function(){ saveState.classList.remove("on"); }, 1400);
+  }
+
+  function store(key, val){
+    try{ localStorage.setItem(PREFIX+key, val); }catch(e){/* preview / private mode: degrade silently */}
+  }
+  function load(key){
+    try{ return localStorage.getItem(PREFIX+key); }catch(e){ return null; }
+  }
+
+  // restore
+  document.querySelectorAll("[data-key]").forEach(function(el){
+    var k = el.getAttribute("data-key");
+    var v = load(k);
+    if(v === null) return;
+    if(el.type === "checkbox"){ el.checked = (v === "1"); }
+    else { el.innerHTML = v; }
+  });
+
+  // save on edit
+  document.querySelectorAll("[contenteditable='true'][data-key]").forEach(function(el){
+    el.addEventListener("input", function(){ store(el.getAttribute("data-key"), el.innerHTML); flash(); });
+  });
+  document.querySelectorAll("input[type='checkbox'][data-key]").forEach(function(el){
+    el.addEventListener("change", function(){ store(el.getAttribute("data-key"), el.checked ? "1":"0"); flash(); });
+  });
+
+  // tabs
+  var tabs = document.querySelectorAll(".tab");
+  tabs.forEach(function(tab){
+    tab.addEventListener("click", function(){
+      tabs.forEach(function(t){ t.setAttribute("aria-selected","false"); });
+      tab.setAttribute("aria-selected","true");
+      document.querySelectorAll(".panel").forEach(function(p){ p.classList.remove("active"); });
+      document.getElementById(tab.getAttribute("data-panel")).classList.add("active");
+      window.scrollTo({top:0, behavior:"smooth"});
+    });
+  });
+
+  // reset (confirm-gated)
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    if(!confirm("Sicuro? Cancella tutto quello che hai scritto su questo dispositivo.")) return;
+    try{
+      Object.keys(localStorage).forEach(function(k){ if(k.indexOf(PREFIX)===0) localStorage.removeItem(k); });
+    }catch(e){}
+    location.reload();
+  });
+})();
+</script>
+</body>
+</html>
